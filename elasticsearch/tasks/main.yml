@@ -1,0 +1,43 @@
+---
+# tasks file for setup elastic search
+
+# adding apt key for elastic search
+- name: add elasticsearch apt key
+  apt_key:
+    url: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
+    state: present
+
+
+# adding repo for installing
+- name: addingrepository for elasticsearch
+  apt_repository:
+    repo: deb https://artifacts.elastic.co/packages/7.x/apt stable main
+    state: present
+
+- name: install elasticsearch
+  apt:
+    name: elasticsearch
+    state: present
+    update_cache: true
+  notify: start elasticsearch
+
+- name: configure elasticsearch
+  lineinfile:
+    path: /etc/elasticsearch/elasticsearch.yml
+    line: "{{ item }}"
+  loop:
+    - 'transport.host: localhost'
+    - 'transport.tcp.port: 9300'
+    - 'network.host: localhost'
+    - 'http.port: 9200'
+    - 'discovery.type: single-node'
+      #  - 'setup.ilm.overwrite: true'
+
+- name: adding jvm heap
+  lineinfile:
+    path: /etc/elasticsearch/jvm.options
+    line: "{{ item }}"
+  loop:
+    - '-Xms512m'
+    - '-Xmx512m'
+  notify: restart elasticsearch

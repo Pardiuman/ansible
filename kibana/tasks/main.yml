@@ -1,0 +1,20 @@
+---
+# tasks file for kibana
+#
+#
+- name: install kibana
+  apt: 
+    name: kibana
+    state: present
+  notify: start kibana
+
+- name: configure kibana 
+  lineinfile:
+    path: /etc/kibana/kibana.yml
+    line: "{{ item }}"
+  loop:
+    - 'server.port: 5601'
+    - 'server.host: $HOSTNAME'
+    - 'elasticsearch.hosts: ["http://localhost:9200"]'
+  notify: restart kibana
+
